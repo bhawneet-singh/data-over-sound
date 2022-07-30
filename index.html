@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0">
+	<title>reciever</title>
+</head>
+<body>
+	<h1>null</h1>
+	<h3 class="decode"></h3>
+<script type="text/javascript">
+	let heading = document.querySelector(".decode")
+	let decodedString = ""
+	let audioContext = new AudioContext()
+	document.body.addEventListener("mouseover",init)
+	function init()
+	{
+		audioContext.resume()
+		document.body.removeEventListener("mouseover",init)
+	}
+	
+	let analyzer = audioContext.createAnalyser()
+	analyzer.minDecibels = -90
+	analyzer.maxDecibels = -10
+	analyzer.smoothingTimeConstant = 0.08
+	let source 
+	if(navigator.mediaDevices.getUserMedia)
+	{
+		navigator.mediaDevices.getUserMedia({audio:true})
+		.then(stream =>
+		{
+			source = audioContext.createMediaStreamSource(stream)
+			source.connect(analyzer)
+			getNode()
+		})
+	}
+	let toggle = true
+	let bit = 0
+	let str = ""
+	function getNode()
+	{
+		analyzer.fftSize = 512
+		let length = analyzer.frequencyBinCount
+		let array = new Uint8Array(length)
+		console.log(length)
+		let interval 
+		let draw = function ()
+		{
+		analyzer.getByteFrequencyData(array)
+		let textBox = document.querySelector("h1")
+		let sum = array[18]
+		textBox.textContent = sum
+		if(sum >= 180)
+			bit = 1
+		else
+			bit = 0
+
+		if(!toggle)
+		{
+			str += bit
+			if(str.length === 8)
+			{
+				let charCode = parseInt(str,2)
+				if(charCode === 0)
+				{
+					clearInterval(interval)
+				}
+				decodedString += String.fromCharCode(charCode)
+				heading.textContent = decodedString
+				str = ""
+			}
+		}	
+		if(bit === 1 && toggle)
+		{
+			toggle = !toggle
+			clearInterval(interval)
+			interval = setInterval(draw,100)
+		}
+		
+		console.log(bit)
+		}
+		
+		interval = setInterval(draw,70)
+	}	
+	
+</script>
+</body>
+</html>

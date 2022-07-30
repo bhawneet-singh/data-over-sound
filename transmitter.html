@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>transmitter</title>
+</head>
+<style>
+    *
+    {
+        padding: 0;
+        margin: 0;
+    }
+    body
+    {
+        display: flex;
+        height: 100vh;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    button
+    {
+        border: none;
+        margin: 50px;
+        background-color:rgba(8, 100, 153, 0.541);
+        padding: 10px;
+        border-radius: 4px;
+    }
+</style>
+<body>
+    <input class="text" type="text">
+    <button onclick="main()">prepare</button>
+    <button onclick="transmit()">send</button>
+<script>
+    function convert(str) 
+    {
+        let output = "1"
+        for (var i = 0; i < str.length; i++) 
+        {
+            output += ("0" + str[i].charCodeAt(0).toString(2));
+        }
+        return output
+    } 
+    let audioContext
+    let occilatorNode
+    function main()
+    {
+        audioContext = new AudioContext()
+        occilatorNode  = audioContext.createOscillator()
+        occilatorNode.type = "sawtooth"
+        occilatorNode.frequency.setValueAtTime(0,audioContext.currentTime)
+        occilatorNode.connect(audioContext.destination)
+        occilatorNode.start()   
+    }
+    
+    function transmit()
+    {
+        let arr = convert(document.querySelector(".text").value)
+        let length = arr.length
+        let i = 0
+        let interval = setInterval(()=>{
+        if(i === length)
+        {
+                clearInterval(interval)
+        }
+
+        if(arr[i] === "1")
+        {
+            occilatorNode.frequency.setValueAtTime(1525,audioContext.currentTime)   
+            console.log(1)
+        }
+        else
+        {
+            occilatorNode.frequency.setValueAtTime(0,audioContext.currentTime)  
+            console.log(0)
+        }
+        i++
+    },80)
+    }
+</script>
+</body>
+</html>
